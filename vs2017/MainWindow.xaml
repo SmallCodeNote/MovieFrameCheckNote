@@ -1,0 +1,236 @@
+﻿<Window x:Class="MovieFrameCheck.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MovieFrameCheck"
+        mc:Ignorable="d"
+        Title="MovieFrameCheck" Height="800" Width="1200" Loaded="Window_Loaded" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="SliderStyles.xaml"/>
+                <ResourceDictionary Source="MovieOperationButtonStyle.xaml"/>
+                <ResourceDictionary Source="VerticalTabStyle.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <TabControl x:Name="tabControl_Main" TabStripPlacement="Left" SelectionChanged="TabControl_Main_SelectionChanged">
+        <TabControl.Resources>
+            <Style TargetType="TabItem" BasedOn="{StaticResource VerticalTabStyle}" />
+        </TabControl.Resources>
+
+        <TabItem Header="Main" Margin="1,0,-1,0">
+            <DockPanel LastChildFill="True">
+
+                <DockPanel LastChildFill="True"  DockPanel.Dock="Left">
+
+                    <ToolBarTray Background="White" DockPanel.Dock="Top">
+                        <ToolBar Band="1" BandIndex="1">
+                            <!-- Clear All Selections -->
+                            <Button x:Name="button_dataGrid_CheckAllClear" Width="30" VerticalAlignment="Top" Content="🧹" Click="button_dataGrid_CheckAllClear_Click" ToolTip="Clear all checkboxes in the DataGrid" />
+                            <!-- Select All -->
+                            <Button x:Name="button_dataGrid_CheckAll" Width="30" VerticalAlignment="Top" Content="✅" ToolTip="Select all checkboxes in the DataGrid" Click="button_dataGrid_CheckAll_Click"/>
+                            <!-- Copy Row Labels -->
+                            <Button x:Name="button_dataGrid_RowLabelCopy" Width="30" VerticalAlignment="Top" Content="📋" Click="button_dataGrid_RowLabelCopy_Click" ToolTip="Copy label values from selected rows" />
+                            <!-- Load from File -->
+                            <Button x:Name="button_dataGrid_RowsLoadFile" Width="30" VerticalAlignment="Top" Content="📂" Click="button_dataGrid_RowsLoadFile_Click" ToolTip="Load row data from a file into the DataGrid" />
+                            <!-- Save to File -->
+                            <Button x:Name="button_dataGrid_RowsSaveFile" Width="30" VerticalAlignment="Top" Content="💾" Click="button_dataGrid_RowsSaveFile_Click" ToolTip="Save current row data to a file" />
+                        </ToolBar>
+
+                        <ToolBar Band="1" BandIndex="2">
+                            <!-- Load from File -->
+                            <Button x:Name="button_LoadMovieFile" Width="30" VerticalAlignment="Top" Content="🎦" ToolTip="Load movie file" Click="button_LoadMovieFile_Click"/>
+                            <Button x:Name="button_SordLabeledPicture" Width="30" VerticalAlignment="Top" Content="🗃" ToolTip="SordLabeledPicture" Click="button_SortLabeledPicture_Click"/>
+                        </ToolBar>
+
+                    </ToolBarTray>
+
+                    <DataGrid x:Name="DataGrid_FeatureList" ItemsSource="{Binding RowDataList}" AllowDrop="True" DockPanel.Dock="Top" Margin="3" CanUserAddRows="False" CanUserResizeRows="False" AutoGenerateColumns="False" ScrollViewer.VerticalScrollBarVisibility="Visible" CanUserSortColumns="True" 
+                              SelectionChanged="DataGrid_FeatureList_SelectionChanged"
+                              CellEditEnding="DataGrid_FeatureList_CellEditEnding" 
+                              PreviewKeyDown="DataGrid_FeatureList_PreviewKeyDown" Drop="DataGrid_FeatureList_Drop"
+                              >
+
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn Header="c" Width="25" Binding="{Binding Check, Mode=TwoWay}"/>
+                            <DataGridTextColumn Header="file" Width="65" Binding="{Binding File}"/>
+                            <DataGridTextColumn Header="frame" Width="50" Binding="{Binding Frame}"/>
+                            <DataGridTextColumn Header="feature" Width="0" Visibility="Hidden" Binding="{Binding Feature}"/>
+                            <DataGridComboBoxColumn Header="label" Width="80"
+                        SelectedValueBinding="{Binding Label, Mode=TwoWay}"
+                        SelectedValuePath="LabelId"
+                        DisplayMemberPath="Display"
+                        ItemsSource="{Binding Path=DataContext.LabelList, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                        </DataGrid.Columns>
+
+
+                        <DataGrid.RowHeaderStyle>
+                            <Style TargetType="DataGridRowHeader">
+                                <Setter Property="Width" Value="20" />
+                            </Style>
+                        </DataGrid.RowHeaderStyle>
+
+                    </DataGrid>
+                </DockPanel>
+
+                <DockPanel  LastChildFill="True" Background="LightGray">
+
+                    <DockPanel DockPanel.Dock="Top" LastChildFill="True" Background="LightGray" Height="30" Margin="0">
+                        <Border Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"  CornerRadius="5"  Padding="0" Margin="3">
+                            <DockPanel LastChildFill="True" Height="30">
+                                <Button x:Name="button_workDirectoryPathOpen" DockPanel.Dock="Left"  Content="🎦📁" Width="40" VerticalAlignment="Top" Padding="0" Margin="3" BorderThickness="0"  Background="Transparent" FontFamily="Segoe UI Emoji" Click="button_xDirectoryPathOpen_Click"/>
+                                <Button x:Name="button_workDirectoryPathClear" DockPanel.Dock="Right"  Content="❎" Width="30" Padding="0" Margin="3" VerticalAlignment="Top"  BorderThickness="0"    Background="Transparent" FontFamily="Segoe UI Emoji" Click="Button_xDirectoryPathClear_Click" />
+                                <TextBox x:Name="textBox_workDirectoryPath"  BorderThickness="0" VerticalAlignment="Top"  Background="Transparent"    VerticalContentAlignment="Center"     Margin="3"  Padding="5,0" FontSize="14" ToolTip="Work Directory Path"/>
+                            </DockPanel>
+                        </Border>
+                    </DockPanel>
+
+                    <DockPanel>
+
+                        <DockPanel LastChildFill="True" DockPanel.Dock="Bottom">
+
+                            <ToolBarTray Background="White" DockPanel.Dock="Bottom">
+                                <ToolBar Band="1" BandIndex="1">
+                                    <Button x:Name="button_ImageSendClipboard" Width="40" VerticalAlignment="Top" Content="➡📎" ToolTip="send clipboard" Click="Button_ImageSendClipboard_Click"/>
+                                    <Button x:Name="button_ImageSaveFile" Width="40" VerticalAlignment="Top" Content="➡📄" ToolTip="save file" Click="Button_ImageSaveFile_Click"/>
+                                </ToolBar>
+                                <ToolBar Band="1" BandIndex="2" Visibility="Hidden">
+                                    <ComboBox x:Name="ZoomComboBox" SelectionChanged="ZoomComboBox_SelectionChanged" Margin="3">
+                                        <ComboBoxItem Content="50%" Tag="0.5"/>
+                                        <ComboBoxItem Content="100%" Tag="1.0" IsSelected="True"/>
+                                        <ComboBoxItem Content="150%" Tag="1.5"/>
+                                        <ComboBoxItem Content="200%" Tag="2.0"/>
+                                    </ComboBox>
+                                    <Button x:Name="button_moveImageCenter" Width="30" VerticalAlignment="Top"  Content="❇️" Click="Button_moveImageCenter_Click"  />
+                                </ToolBar>
+                            </ToolBarTray>
+
+                            <DockPanel LastChildFill="True" DockPanel.Dock="Bottom" Height="60" Background="AliceBlue">
+
+                                <Button x:Name="button_SkipBackFewFrames" 
+                                        Content="⏪" 
+                                        Style="{StaticResource MovieOperationButtonStyle}"
+                                        Click="button_SkipBackFewFrames_Click"
+                                        ToolTip="Skip back several frames"
+                                        />
+
+                                <Button x:Name="button_PreviousFrame"
+                                        Content="⏴"
+                                        Style="{StaticResource MovieOperationButtonStyle}"
+                                        Click="button_PreviousFrame_Click"
+                                        ToolTip="Go to previous frame"
+                                        />
+
+                                <Button x:Name="button_NextFrame"
+                                        Content="⏵"
+                                        Style="{StaticResource MovieOperationButtonStyle}"
+                                        Click="button_NextFrame_Click"
+                                        ToolTip="Go to next frame"
+                                        />
+
+                                <Button x:Name="button_SkipForwardFewFrames"
+                                        Content="⏩"
+                                        Style="{StaticResource MovieOperationButtonStyle}"
+                                        Click="button_SkipForwardFewFrames_Click"
+                                        ToolTip="Skip forward several frames"
+                                        />
+                                <Label x:Name="label_framePosition" Content="..." VerticalAlignment="Center" Margin="5" HorizontalContentAlignment="Center" Width="80"/>
+
+                                <Slider x:Name="slider_frameIndex" ValueChanged="slider_frameIndex_ValueChanged"/>
+
+                            </DockPanel>
+                        </DockPanel>
+
+                        <DockPanel  LastChildFill="True">
+
+                            <TabControl x:Name="tabControl_Info" DockPanel.Dock="Right" TabStripPlacement="Top" Width="180" >
+                                <TabControl.Resources>
+                                    <Style TargetType="{x:Type TabItem}" />
+                                </TabControl.Resources>
+                                <TabItem Header="Info">
+
+                                    <DockPanel LastChildFill="True">
+                                        <TextBox x:Name="textBox_FeatureInfo" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+
+                                    </DockPanel>
+                                </TabItem>
+                                <TabItem Header="Conf">
+                                    <Grid Background="#FFE5E5E5">
+                                        
+                                    </Grid>
+                                </TabItem>
+                                <TabItem Header="Labels">
+                                    <Grid Background="#FFE5E5E5">
+                                        <DockPanel LastChildFill="True" Margin="0" VerticalAlignment="Stretch">
+                                            <TextBox x:Name="textBox_LabelsView" Background="Transparent" BorderThickness="0" Padding="3" Margin="3" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+                                            
+                                        </DockPanel>
+                                    </Grid>
+                                </TabItem>
+                            </TabControl>
+
+                            <ScrollViewer x:Name="ImageScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Margin="3">
+                                <Grid>
+                                    <Image x:Name="image_DisplayedImage" RenderTransformOrigin="0.5,0.5" MouseLeftButtonUp="Image_DisplayedImage_MouseLeftButtonUp">
+                                        <Image.LayoutTransform>
+                                            <ScaleTransform x:Name="ImageScaleTransform" ScaleX="1.0" ScaleY="1.0"/>
+                                        </Image.LayoutTransform>
+                                    </Image>
+                                    <Canvas x:Name="overlayCanvas" IsHitTestVisible="False" RenderTransformOrigin="0.5,0.5"/>
+                                </Grid>
+                            </ScrollViewer>
+
+                        </DockPanel>
+
+                    </DockPanel>
+                </DockPanel>
+            </DockPanel>
+        </TabItem>
+        <TabItem Header="Setting">
+            <Grid Background="#FFE5E5E5">
+                <DockPanel LastChildFill="True">
+                    <TabControl DockPanel.Dock="Left" x:Name="tabControl_List"  TabStripPlacement="Top" >
+                        <TabControl.Resources>
+                            <Style TargetType="{x:Type TabItem}" />
+                        </TabControl.Resources>
+                        <TabItem Header="LabelList">
+                            <DockPanel LastChildFill="True">
+                                <TextBox x:Name="textBox_LabelList" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" Width="180" HorizontalAlignment="Left" Padding="3,3,3,3" Margin="0,0,0,0" TextWrapping="NoWrap" AcceptsReturn="True" AcceptsTab="True" />
+                            </DockPanel>
+                        </TabItem>
+                    </TabControl>
+                    <DockPanel LastChildFill="True">
+
+                        <Label DockPanel.Dock="Top" x:Name="label_sortDirectoryPath" Margin="0" Padding="10,5,0,0" Content="sortDirectoryPath" VerticalAlignment="Top"/>
+                        <DockPanel DockPanel.Dock="Top" LastChildFill="True" Background="LightGray" Height="30" Margin="0">
+                            <Border Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"  CornerRadius="5"  Padding="0" Margin="3">
+                                <DockPanel LastChildFill="True" Height="30">
+                                    <Button x:Name="button_sortDirectoryPathOpen" DockPanel.Dock="Left"  Content="🗃" Width="30" VerticalAlignment="Top" Padding="0" Margin="3" BorderThickness="0"  Background="Transparent" FontFamily="Segoe UI Emoji" Click="button_xDirectoryPathOpen_Click"/>
+                                    <Button x:Name="button_sortDirectoryPathClear" DockPanel.Dock="Right" Content="❎" Width="30" Padding="0" Margin="3" VerticalAlignment="Top"  BorderThickness="0"    Background="Transparent" FontFamily="Segoe UI Emoji" Click="Button_xDirectoryPathClear_Click" />
+                                    <TextBox x:Name="textBox_sortDirectoryPath"  BorderThickness="0" VerticalAlignment="Top"  Background="Transparent"    VerticalContentAlignment="Center"     Margin="3"  Padding="5,0" FontSize="14" ToolTip="sort Directory Path"/>
+                                </DockPanel>
+                            </Border>
+                        </DockPanel>
+
+                        <Label DockPanel.Dock="Top" x:Name="label_fileList" Margin="0" Padding="10,5,0,0" Content="FileList" VerticalAlignment="Top"/>
+                        <DockPanel DockPanel.Dock="Top" LastChildFill="True" Background="LightGray" Margin="0">
+                            <Border Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"  CornerRadius="5"  Padding="0" Margin="3,3,3,3">
+                                <DockPanel LastChildFill="True">
+                                    <Button x:Name="button_fileListAdd" DockPanel.Dock="Left"  Content="➕" Width="30" VerticalContentAlignment="Top" VerticalAlignment="Stretch" Padding="0" Margin="3,3,3,3" BorderThickness="0"  Background="Transparent" FontFamily="Segoe UI Emoji" Click="Button_fileListAdd_Click"/>
+                                    <Button x:Name="button_fileListClear" DockPanel.Dock="Right" Content="❎" Width="30" VerticalContentAlignment="Top" Padding="0" Margin="3,3,3,3" VerticalAlignment="Stretch"  BorderThickness="0" Background="Transparent" FontFamily="Segoe UI Emoji" Click="Button_fileListClear_Click"/>
+                                    <TextBox x:Name="textBox_fileList" BorderThickness="0" VerticalAlignment="Stretch" AcceptsReturn="True" Background="Transparent" VerticalContentAlignment="Top" Margin="3,3,3,3" Padding="5,0,0,0" FontSize="14" ToolTip="File List" VerticalScrollBarVisibility="Visible"/>
+                                </DockPanel>
+                            </Border>
+                        </DockPanel>
+
+                    </DockPanel>
+                </DockPanel>
+            </Grid>
+        </TabItem>
+    </TabControl>
+
+</Window>
