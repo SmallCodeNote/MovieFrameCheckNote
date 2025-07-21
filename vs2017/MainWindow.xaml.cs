@@ -515,7 +515,7 @@ namespace MovieFrameCheck
         private string inputBuffer = "";
         private void DataGrid_FeatureList_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if ((e.Key == Key.Up || e.Key == Key.Down) && activeRows.Count == 1 && activeRows[0].Frame != slider_frameIndex.Value.ToString())
+            if ((e.Key == Key.Down) && activeRows.Count == 1 && activeRows[0].Frame != slider_frameIndex.Value.ToString())
             {
                 if (double.TryParse(activeRows[0].Frame, out double targetIndex))
                 {
@@ -523,6 +523,21 @@ namespace MovieFrameCheck
                     setImage_FrameImage(activeRows[0], textBox_workDirectoryPath.Text);
                     e.Handled = true;
                 }
+            }
+
+            if ((e.Key == Key.Up) && activeRows.Count == 1 && activeRows[0].Frame != slider_frameIndex.Value.ToString())
+            {
+                var list = DataGrid_FeatureList.ItemsSource as IList<RowData>;
+                var matchingItems = list.Where(item => item.Frame == slider_frameIndex.Value.ToString()).ToList();
+
+                if (matchingItems.Count > 0)
+                {
+                    DataGrid_FeatureList.SelectedItems.Clear();
+                    DataGrid_FeatureList.SelectedItems.Add(matchingItems[0]);
+                    DataGrid_FeatureList.ScrollIntoView(matchingItems[0]);
+                }
+                FocusCurrentRow(DataGrid_FeatureList);
+                e.Handled = true;
             }
 
 
