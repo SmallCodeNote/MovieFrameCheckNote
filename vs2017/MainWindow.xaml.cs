@@ -503,7 +503,7 @@ namespace MovieFrameCheck
             if (e.Column is DataGridComboBoxColumn && e.EditAction == DataGridEditAction.Commit)
             {
                 var row = e.Row.Item as RowData;
-                if (row != null){ row.Check = true; }
+                if (row != null) { row.Check = true; }
             }
 
         }
@@ -515,6 +515,17 @@ namespace MovieFrameCheck
         private string inputBuffer = "";
         private void DataGrid_FeatureList_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            if ((e.Key == Key.Up || e.Key == Key.Down) && activeRows.Count == 1 && activeRows[0].Frame != slider_frameIndex.Value.ToString())
+            {
+                if (double.TryParse(activeRows[0].Frame, out double targetIndex))
+                {
+                    slider_frameIndex.Value = targetIndex;
+                    setImage_FrameImage(activeRows[0], textBox_workDirectoryPath.Text);
+                    e.Handled = true;
+                }
+            }
+
+
             if (e.Key == Key.Enter)
             {
                 for (int ri = 0; ri < activeRows.Count; ri++)
@@ -576,6 +587,7 @@ namespace MovieFrameCheck
                 {
                     frameIndexShift(-1);
                 }
+                e.Handled = true;
             }
             if (e.Key == Key.Right)
             {
@@ -587,6 +599,7 @@ namespace MovieFrameCheck
                 {
                     frameIndexShift(1);
                 }
+                e.Handled = true;
             }
         }
 
