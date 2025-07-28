@@ -536,6 +536,71 @@ namespace MovieFrameCheck
         private string inputBuffer = "";
         private void DataGrid_FeatureList_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+
+            if ((e.Key == Key.Down) && activeRows.Count > 1)
+            {
+                int maxIndex = activeRows
+                    .Select(row => DataGrid_FeatureList.Items.IndexOf(row))
+                    .Where(index => index >= 0)
+                    .DefaultIfEmpty(-1)
+                    .Max();
+
+                int nextIndex = maxIndex + 1;
+
+                if (nextIndex < DataGrid_FeatureList.Items.Count)
+                {
+                    DataGrid_FeatureList.SelectedIndex = nextIndex;
+                    DataGrid_FeatureList.ScrollIntoView(DataGrid_FeatureList.Items[nextIndex]);
+
+                    var row = (DataGridRow)DataGrid_FeatureList.ItemContainerGenerator.ContainerFromIndex(nextIndex);
+                    if (row != null)
+                    {
+                        row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                    }
+                    else
+                    {
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            var nextRow = (DataGridRow)DataGrid_FeatureList.ItemContainerGenerator.ContainerFromIndex(nextIndex);
+                            nextRow?.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                        }), DispatcherPriority.Loaded);
+                    }
+                }
+                e.Handled = true;
+            }
+
+            if ((e.Key == Key.Up) && activeRows.Count > 1)
+            {
+                int minIndex = activeRows
+                    .Select(row => DataGrid_FeatureList.Items.IndexOf(row))
+                    .Where(index => index >= 0)
+                    .DefaultIfEmpty(int.MaxValue)
+                    .Min();
+
+                int prevIndex = minIndex - 1;
+
+                if (prevIndex >= 0)
+                {
+                    DataGrid_FeatureList.SelectedIndex = prevIndex;
+                    DataGrid_FeatureList.ScrollIntoView(DataGrid_FeatureList.Items[prevIndex]);
+
+                    var row = (DataGridRow)DataGrid_FeatureList.ItemContainerGenerator.ContainerFromIndex(prevIndex);
+                    if (row != null)
+                    {
+                        row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous));
+                    }
+                    else
+                    {
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            var prevRow = (DataGridRow)DataGrid_FeatureList.ItemContainerGenerator.ContainerFromIndex(prevIndex);
+                            prevRow?.MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous));
+                        }), DispatcherPriority.Loaded);
+                    }
+                }
+                e.Handled = true;
+            }
+
             if ((e.Key == Key.Down) && activeRows.Count == 1 && activeRows[0].Frame != slider_frameIndex.Value.ToString())
             {
                 if (double.TryParse(activeRows[0].Frame, out double targetIndex))
@@ -558,6 +623,35 @@ namespace MovieFrameCheck
                     DataGrid_FeatureList.ScrollIntoView(matchingItems[0]);
                 }
                 FocusCurrentRow(DataGrid_FeatureList);
+                e.Handled = true;
+            }
+
+            if ((e.Key == Key.Down) && activeRows != null && activeRows.Count > 1)
+            {
+                // RowDataList の中で activeRows に含まれる最大インデックスを見つける
+                var indices = activeRows
+                    .Select(row => RowDataList.IndexOf(row))
+                    .Where(index => index >= 0)
+                    .ToList();
+
+                if (indices.Count > 0)
+                {
+                    int maxIndex = indices.Max();
+                    int nextIndex = maxIndex + 1;
+
+                    if (nextIndex < RowDataList.Count)
+                    {
+                        DataGrid_FeatureList.SelectedIndex = nextIndex;
+                        DataGrid_FeatureList.ScrollIntoView(DataGrid_FeatureList.Items[nextIndex]);
+
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            var nextRow = (DataGridRow)DataGrid_FeatureList.ItemContainerGenerator.ContainerFromIndex(nextIndex);
+                            nextRow?.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                        }), DispatcherPriority.Loaded);
+                    }
+                }
+
                 e.Handled = true;
             }
 
@@ -604,12 +698,11 @@ namespace MovieFrameCheck
                         activeRows[ri].Label = labelValue;
                         activeRows[ri].Check = true;
 
-                        LastSelectedRowData = 
+                    }
 
-                        if (labelValue < listBox_LabelsView.Items.Count + 1)
-                        {
-                            listBox_LabelsView.SelectedIndex = labelValue + 1;
-                        }
+                    if (labelValue < listBox_LabelsView.Items.Count + 1)
+                    {
+                        listBox_LabelsView.SelectedIndex = labelValue + 1;
                     }
 
                     setImage_updateBBox(activeRows[activeRows.Count - 1]);
@@ -739,9 +832,9 @@ namespace MovieFrameCheck
                 if (lastSelected != null)
                 {
                     RowData LastSelectedRowDataBuff = LastSelectedRowData;
-                    if (lastSelected!=null) LastSelectedRowData = lastSelected;
+                    if (lastSelected != null) LastSelectedRowData = lastSelected;
 
-                    if (LastSelectedRowData == null && LastSelectedRowDataBuff!=null) { LastSelectedRowData = LastSelectedRowDataBuff; }
+                    if (LastSelectedRowData == null && LastSelectedRowDataBuff != null) { LastSelectedRowData = LastSelectedRowDataBuff; }
 
                     setTextBox_FeatureInfo(lastSelected);
 
@@ -1139,14 +1232,13 @@ namespace MovieFrameCheck
             try
             {
                 if (DataGrid_FeatureList.IsKeyboardFocusWithin) { return; }
-                if (LastSelectedRowData != null)
-                {
-                    var LastSelectedRowDataBuff = LastSelectedRowData;
-                    LastSelectedRowDataBuff.Label = ((ListBox)sender).SelectedIndex - 1;
-                    LastSelectedRowDataBuff.Check = true;
-                    setImage_updateBBox(LastSelectedRowDataBuff);
 
-                    LastSelectedRowData = LastSelectedRowDataBuff;
+                int labelValue = listBox_LabelsView.SelectedIndex - 1;
+                for (int ri = 0; ri < activeRows.Count; ri++)
+                {
+                    if (activeRows[ri] == null) continue;
+                    activeRows[ri].Label = labelValue;
+                    activeRows[ri].Check = true;
                 }
 
                 FocusCurrentRow(DataGrid_FeatureList);
