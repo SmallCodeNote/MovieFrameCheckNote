@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Input;
 using System.Windows.Interop;
 using Microsoft.Win32;
-
+using System.Windows.Media;
 using OpenCvSharp;
 using OpenCvSharp.WpfExtensions;
 
@@ -478,6 +478,11 @@ namespace MovieFrameCheck
 
             ShowFrame(newFrameIndex);
 
+            setImage_updateBBox(rowData);
+        }
+
+        private void setImage_updateBBox(RowData rowData)
+        {
             try
             {
                 float[] f = rowData.Feature.Split(',').Select(s => float.Parse(s)).ToArray();
@@ -488,14 +493,19 @@ namespace MovieFrameCheck
                 float top = f[1] - height / 2f;
 
                 clearBBox_DisplayedImage();
-                drawBBox_DisplayedImage(top, left, width, height);
+
+                string title = "";
+                if (rowData.Label >= 0 && LabelList.Count > rowData.Label) { title = LabelList[rowData.Label].Display; }
+                drawBBox_DisplayedImage(top, left, width, height, title, rowData.Check);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"ERROR:{System.Reflection.MethodBase.GetCurrentMethod().Name} {ex.Message} {ex.StackTrace}");
 
             }
+
         }
+
 
         RowData changedRowData = null;
         private void DataGrid_FeatureList_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
@@ -503,7 +513,10 @@ namespace MovieFrameCheck
             if (e.Column is DataGridComboBoxColumn && e.EditAction == DataGridEditAction.Commit)
             {
                 var row = e.Row.Item as RowData;
-                if (row != null) { row.Check = true; }
+                if (row != null)
+                {
+                    row.Check = true;
+                }
             }
 
         }
@@ -583,6 +596,8 @@ namespace MovieFrameCheck
                         activeRows[ri].Label = labelValue;
                         activeRows[ri].Check = true;
                     }
+
+                    setImage_updateBBox(activeRows[activeRows.Count-1]);
                 }
 
                 FocusCurrentRow(DataGrid_FeatureList);
@@ -592,29 +607,32 @@ namespace MovieFrameCheck
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Left)
+            if (tabItem_Main.IsSelected)
             {
-                if (Keyboard.Modifiers == ModifierKeys.Control)
+                if (e.Key == Key.Left)
                 {
-                    frameIndexShift(-5);
+                    if (Keyboard.Modifiers == ModifierKeys.Control)
+                    {
+                        frameIndexShift(-5);
+                    }
+                    else
+                    {
+                        frameIndexShift(-1);
+                    }
+                    e.Handled = true;
                 }
-                else
+                if (e.Key == Key.Right)
                 {
-                    frameIndexShift(-1);
+                    if (Keyboard.Modifiers == ModifierKeys.Control)
+                    {
+                        frameIndexShift(5);
+                    }
+                    else
+                    {
+                        frameIndexShift(1);
+                    }
+                    e.Handled = true;
                 }
-                e.Handled = true;
-            }
-            if (e.Key == Key.Right)
-            {
-                if (Keyboard.Modifiers == ModifierKeys.Control)
-                {
-                    frameIndexShift(5);
-                }
-                else
-                {
-                    frameIndexShift(1);
-                }
-                e.Handled = true;
             }
         }
 
@@ -716,7 +734,7 @@ namespace MovieFrameCheck
 
             }
 
-            if (activeRows.Count <= 1) inputBuffer = "";
+            if (activeRows.Count <= 0) inputBuffer = "";
         }
 
         private void button_SortLabeledPicture_Click(object sender, RoutedEventArgs e)
@@ -774,7 +792,7 @@ namespace MovieFrameCheck
             }
         }
 
-        void drawBBox_DisplayedImage(float top, float left, float width, float height)
+        void drawBBox_DisplayedImage(float top, float left, float width, float height, string title)
         {
             if (image_DisplayedImage.Source is BitmapSource bitmap)
             {
@@ -807,6 +825,59 @@ namespace MovieFrameCheck
             }
         }
 
+        void drawBBox_DisplayedImage(float top, float left, float width, float height, string title, bool check)
+        {
+            if (image_DisplayedImage.Source is BitmapSource bitmap)
+            {
+                double imageWidth = image_DisplayedImage.ActualWidth;
+                double imageHeight = image_DisplayedImage.ActualHeight;
+
+                double offsetX = (overlayCanvas.ActualWidth - imageWidth) / 2.0;
+                double offsetY = (overlayCanvas.ActualHeight - imageHeight) / 2.0;
+
+                double scaleX = imageWidth / bitmap.PixelWidth;
+                double scaleY = imageHeight / bitmap.PixelHeight;
+
+                double rectLeft = left * scaleX + offsetX;
+                double rectTop = top * scaleY + offsetY;
+                double rectWidth = width * scaleX;
+                double rectHeight = height * scaleY;
+
+                // Draw bounding box
+                System.Windows.Shapes.Rectangle bbox = new System.Windows.Shapes.Rectangle
+                {
+                    Stroke = System.Windows.Media.Brushes.Red,
+                    StrokeThickness = 3,
+                    Width = rectWidth,
+                    Height = rectHeight
+                };
+
+                Canvas.SetLeft(bbox, rectLeft);
+                Canvas.SetTop(bbox, rectTop);
+                overlayCanvas.Children.Add(bbox);
+
+                // Calculate dynamic font size
+                double baseFontSize = 12.0;
+                double scale = Math.Max(scaleX, scaleY);
+                double dynamicFontSize = baseFontSize * scale;
+
+                // Draw title text
+                TextBlock titleText = new TextBlock
+                {
+                    Text = title,
+                    Foreground = check ? Brushes.Red : Brushes.Blue,
+                    FontSize = dynamicFontSize,
+                    FontWeight = FontWeights.Bold,
+                    Background = Brushes.White
+                };
+
+                Canvas.SetLeft(titleText, rectLeft);
+                Canvas.SetTop(titleText, rectTop);
+                overlayCanvas.Children.Add(titleText);
+            }
+        }
+
+
         void clearBBox_DisplayedImage()
         {
             overlayCanvas.Children.Clear();
@@ -837,6 +908,7 @@ namespace MovieFrameCheck
                 encoder.Save(stream);
             }
         }
+
 
         private void button_xDirectoryPathOpen_Click(object sender, RoutedEventArgs e)
         {

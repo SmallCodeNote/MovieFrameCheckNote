@@ -22,7 +22,7 @@
             <Style TargetType="TabItem" BasedOn="{StaticResource VerticalTabStyle}" />
         </TabControl.Resources>
 
-        <TabItem Header="Main" Margin="1,0,-1,0">
+        <TabItem Header="Main" Margin="1,0,-1,0" x:Name="tabItem_Main">
             <DockPanel LastChildFill="True">
 
                 <DockPanel LastChildFill="True"  DockPanel.Dock="Left">
@@ -190,7 +190,7 @@
                 </DockPanel>
             </DockPanel>
         </TabItem>
-        <TabItem Header="Setting">
+        <TabItem Header="Setting" x:Name="tabItem_Setting">
             <Grid Background="#FFE5E5E5">
                 <DockPanel LastChildFill="True">
                     <TabControl DockPanel.Dock="Left" x:Name="tabControl_List"  TabStripPlacement="Top" >
