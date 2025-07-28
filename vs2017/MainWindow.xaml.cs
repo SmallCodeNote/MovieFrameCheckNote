@@ -156,7 +156,7 @@ namespace MovieFrameCheck
             DataGrid_FeatureList.Items.Refresh();
         }
 
-        bool suppressFlag_DataGrid_FeatureList_CellValueChanged = false;
+        //bool suppressFlag_DataGrid_FeatureList_CellValueChanged = false;
         string[] RowDataHeader = { "" };
         string[] FeatureHeader = { "" };
         private void button_dataGrid_RowsLoadFile_Click(object sender, RoutedEventArgs e)
@@ -167,7 +167,7 @@ namespace MovieFrameCheck
 
             string[] Lines = File.ReadAllLines(ofd.FileName);
 
-            suppressFlag_DataGrid_FeatureList_CellValueChanged = true;
+            //suppressFlag_DataGrid_FeatureList_CellValueChanged = true;
 
             RowDataList.Clear();
 
@@ -200,7 +200,7 @@ namespace MovieFrameCheck
                 }
             }
             DataGrid_FeatureList.Items.Refresh();
-            suppressFlag_DataGrid_FeatureList_CellValueChanged = false;
+            //suppressFlag_DataGrid_FeatureList_CellValueChanged = false;
         }
 
         private void button_dataGrid_RowsSaveFile_Click(object sender, RoutedEventArgs e)
@@ -316,7 +316,15 @@ namespace MovieFrameCheck
                 LabelList.Add(new LabelItem { LabelId = i, LabelName = labelNames[i] });
             }
 
-            textBox_LabelsView.Text = string.Join("\r\n", LabelList.Select(i => i.Display).ToList());
+            listBox_LabelsView.Items.Clear();
+            listBox_LabelsView.Items.Add("-1: NoData");
+
+            List<string> items = LabelList.Select(i => i.Display).ToList();
+            foreach (var item in items)
+            {
+                listBox_LabelsView.Items.Add(item);
+            }
+
 
         }
 
@@ -507,7 +515,7 @@ namespace MovieFrameCheck
         }
 
 
-        RowData changedRowData = null;
+        //RowData changedRowData = null;
         private void DataGrid_FeatureList_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             if (e.Column is DataGridComboBoxColumn && e.EditAction == DataGridEditAction.Commit)
@@ -595,9 +603,16 @@ namespace MovieFrameCheck
                         if (activeRows[ri] == null) continue;
                         activeRows[ri].Label = labelValue;
                         activeRows[ri].Check = true;
+
+                        LastSelectedRowData = 
+
+                        if (labelValue < listBox_LabelsView.Items.Count + 1)
+                        {
+                            listBox_LabelsView.SelectedIndex = labelValue + 1;
+                        }
                     }
 
-                    setImage_updateBBox(activeRows[activeRows.Count-1]);
+                    setImage_updateBBox(activeRows[activeRows.Count - 1]);
                 }
 
                 FocusCurrentRow(DataGrid_FeatureList);
@@ -663,7 +678,6 @@ namespace MovieFrameCheck
 
         private void FocusCurrentRow(DataGrid dataGrid)
         {
-
             var cellInfo = dataGrid.SelectedCells.FirstOrDefault();
             if (!cellInfo.Equals(default(DataGridCellInfo)))
             {
@@ -724,10 +738,23 @@ namespace MovieFrameCheck
                 var lastSelected = e.AddedItems[e.AddedItems.Count - 1] as RowData;
                 if (lastSelected != null)
                 {
-                    LastSelectedRowData = lastSelected;
+                    RowData LastSelectedRowDataBuff = LastSelectedRowData;
+                    if (lastSelected!=null) LastSelectedRowData = lastSelected;
+
+                    if (LastSelectedRowData == null && LastSelectedRowDataBuff!=null) { LastSelectedRowData = LastSelectedRowDataBuff; }
+
                     setTextBox_FeatureInfo(lastSelected);
 
                     setImage_FrameImage(lastSelected, textBox_workDirectoryPath.Text);
+
+                    if (LastSelectedRowData.Label < listBox_LabelsView.Items.Count + 1)
+                    {
+                        listBox_LabelsView.SelectedIndex = LastSelectedRowData.Label + 1;
+                    }
+                    else
+                    {
+                        listBox_LabelsView.SelectedIndex = 0;
+                    }
 
                 }
                 else { LastSelectedRowData = null; }
@@ -735,6 +762,9 @@ namespace MovieFrameCheck
             }
 
             if (activeRows.Count <= 0) inputBuffer = "";
+
+
+
         }
 
         private void button_SortLabeledPicture_Click(object sender, RoutedEventArgs e)
@@ -832,6 +862,14 @@ namespace MovieFrameCheck
                 double imageWidth = image_DisplayedImage.ActualWidth;
                 double imageHeight = image_DisplayedImage.ActualHeight;
 
+                if (imageWidth == 0 || imageHeight == 0)
+                {
+
+                    image_DisplayedImage.UpdateLayout();
+                    imageWidth = image_DisplayedImage.ActualWidth;
+                    imageHeight = image_DisplayedImage.ActualHeight;
+                }
+
                 double offsetX = (overlayCanvas.ActualWidth - imageWidth) / 2.0;
                 double offsetY = (overlayCanvas.ActualHeight - imageHeight) / 2.0;
 
@@ -875,8 +913,12 @@ namespace MovieFrameCheck
                 Canvas.SetTop(titleText, rectTop);
                 overlayCanvas.Children.Add(titleText);
             }
-        }
+            else
+            {
 
+
+            }
+        }
 
         void clearBBox_DisplayedImage()
         {
@@ -1088,6 +1130,31 @@ namespace MovieFrameCheck
                         encoder.Save(stream);
                     }
                 }
+            }
+        }
+
+        private void ListBox_LabelsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+            try
+            {
+                if (DataGrid_FeatureList.IsKeyboardFocusWithin) { return; }
+                if (LastSelectedRowData != null)
+                {
+                    var LastSelectedRowDataBuff = LastSelectedRowData;
+                    LastSelectedRowDataBuff.Label = ((ListBox)sender).SelectedIndex - 1;
+                    LastSelectedRowDataBuff.Check = true;
+                    setImage_updateBBox(LastSelectedRowDataBuff);
+
+                    LastSelectedRowData = LastSelectedRowDataBuff;
+                }
+
+                FocusCurrentRow(DataGrid_FeatureList);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR:{System.Reflection.MethodBase.GetCurrentMethod().Name} {ex.Message} {ex.StackTrace}");
+
             }
         }
     }

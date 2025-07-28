@@ -30,7 +30,7 @@
                     <ToolBarTray Background="White" DockPanel.Dock="Top">
                         <ToolBar Band="1" BandIndex="1">
                             <!-- Clear All Selections -->
-                            <Button x:Name="button_dataGrid_CheckAllClear" Width="30" VerticalAlignment="Top" Content="🧹" Click="button_dataGrid_CheckAllClear_Click" ToolTip="Clear all checkboxes in the DataGrid" />
+                            <Button x:Name="button_dataGrid_CheckAllClear" Width="30" VerticalAlignment="Top" Content="🔲" Click="button_dataGrid_CheckAllClear_Click" ToolTip="Clear all checkboxes in the DataGrid" />
                             <!-- Select All -->
                             <Button x:Name="button_dataGrid_CheckAll" Width="30" VerticalAlignment="Top" Content="✅" ToolTip="Select all checkboxes in the DataGrid" Click="button_dataGrid_CheckAll_Click"/>
                             <!-- Copy Row Labels -->
@@ -151,6 +151,52 @@
                                 <TabControl.Resources>
                                     <Style TargetType="{x:Type TabItem}" />
                                 </TabControl.Resources>
+                                <TabItem Header="Labels">
+                                    <Grid Background="#FFE5E5E5">
+                                        <DockPanel LastChildFill="True" Margin="0" VerticalAlignment="Stretch">
+                                            <ListBox x:Name="listBox_LabelsView"
+         Background="Transparent"
+         BorderThickness="0"
+         Padding="3"
+         Margin="3"
+         HorizontalAlignment="Stretch"
+         SelectionChanged="ListBox_LabelsView_SelectionChanged">
+
+                                                <ListBox.ItemContainerStyle>
+                                                    <Style TargetType="ListBoxItem">
+                                                        <Setter Property="Padding" Value="4"/>
+                                                        <Setter Property="Foreground" Value="Black"/>
+                                                        <Setter Property="Background" Value="Transparent"/>
+
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="ListBoxItem">
+                                                                    <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                Padding="{TemplateBinding Padding}">
+
+                                                                        <ContentPresenter />
+                                                                    </Border>
+
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsSelected" Value="True">
+                                                                            <Setter TargetName="Bd" Property="Background" Value="Blue"/>
+                                                                            <Setter Property="Foreground" Value="White"/>
+                                                                            <Setter Property="FontWeight" Value="Bold"/>
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </ListBox.ItemContainerStyle>
+
+                                            </ListBox>
+                                        </DockPanel>
+                                    </Grid>
+                                </TabItem>
                                 <TabItem Header="Info">
 
                                     <DockPanel LastChildFill="True">
@@ -160,15 +206,7 @@
                                 </TabItem>
                                 <TabItem Header="Conf">
                                     <Grid Background="#FFE5E5E5">
-                                        
-                                    </Grid>
-                                </TabItem>
-                                <TabItem Header="Labels">
-                                    <Grid Background="#FFE5E5E5">
-                                        <DockPanel LastChildFill="True" Margin="0" VerticalAlignment="Stretch">
-                                            <TextBox x:Name="textBox_LabelsView" Background="Transparent" BorderThickness="0" Padding="3" Margin="3" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
-                                            
-                                        </DockPanel>
+
                                     </Grid>
                                 </TabItem>
                             </TabControl>
