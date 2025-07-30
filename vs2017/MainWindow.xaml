@@ -22,7 +22,7 @@
             <Style TargetType="TabItem" BasedOn="{StaticResource VerticalTabStyle}" />
         </TabControl.Resources>
 
-        <TabItem Header="Main" Margin="1,0,-1,0" x:Name="tabItem_Main">
+        <TabItem Header="Main" Margin="2,0,-2,0" x:Name="tabItem_Main">
             <DockPanel LastChildFill="True">
 
                 <DockPanel LastChildFill="True"  DockPanel.Dock="Left">
@@ -35,13 +35,13 @@
                             <Button x:Name="button_dataGrid_CheckAll" Width="30" VerticalAlignment="Top" Content="✅" ToolTip="Select all checkboxes in the DataGrid" Click="button_dataGrid_CheckAll_Click"/>
                             <!-- Copy Row Labels -->
                             <Button x:Name="button_dataGrid_RowLabelCopy" Width="30" VerticalAlignment="Top" Content="📋" Click="button_dataGrid_RowLabelCopy_Click" ToolTip="Copy label values from selected rows" />
+                        </ToolBar>
+
+                        <ToolBar Band="1" BandIndex="2">
                             <!-- Load from File -->
                             <Button x:Name="button_dataGrid_RowsLoadFile" Width="30" VerticalAlignment="Top" Content="📂" Click="button_dataGrid_RowsLoadFile_Click" ToolTip="Load row data from a file into the DataGrid" />
                             <!-- Save to File -->
                             <Button x:Name="button_dataGrid_RowsSaveFile" Width="30" VerticalAlignment="Top" Content="💾" Click="button_dataGrid_RowsSaveFile_Click" ToolTip="Save current row data to a file" />
-                        </ToolBar>
-
-                        <ToolBar Band="1" BandIndex="2">
                             <!-- Load from File -->
                             <Button x:Name="button_LoadMovieFile" Width="30" VerticalAlignment="Top" Content="🎦" ToolTip="Load movie file" Click="button_LoadMovieFile_Click"/>
                             <Button x:Name="button_SordLabeledPicture" Width="30" VerticalAlignment="Top" Content="🗃" ToolTip="SordLabeledPicture" Click="button_SortLabeledPicture_Click"/>
@@ -231,7 +231,19 @@
         <TabItem Header="Setting" x:Name="tabItem_Setting">
             <Grid Background="#FFE5E5E5">
                 <DockPanel LastChildFill="True">
-                    <TabControl DockPanel.Dock="Left" x:Name="tabControl_List"  TabStripPlacement="Top" >
+                    <DockPanel LastChildFill="True" DockPanel.Dock="Left">
+                        <ToolBarTray Background="White" DockPanel.Dock="Top">
+                            <ToolBar Band="1" BandIndex="1">
+                                <!-- Load from File -->
+                                <Button x:Name="button_LoadSetting" Width="30" VerticalAlignment="Top" Content="📂" Click="button_LoadSetting_Click" ToolTip="LoadSetting" />
+                                <!-- Save to File -->
+                                <Button x:Name="button_SaveSetting" Width="30" VerticalAlignment="Top" Content="💾" Click="button_SaveSetting_Click" ToolTip="SaveSetting" />
+                                <!-- Save to File -->
+                                <Button x:Name="button_UpdateDafaultSetting" Width="30" VerticalAlignment="Top" Content="📥" Click="button_UpdateDafaultSetting_Click" ToolTip="UpdateDafaultSetting" />
+                            </ToolBar>
+                        </ToolBarTray>
+                        
+                        <TabControl DockPanel.Dock="Top" x:Name="tabControl_List"  TabStripPlacement="Top" >
                         <TabControl.Resources>
                             <Style TargetType="{x:Type TabItem}" />
                         </TabControl.Resources>
@@ -241,29 +253,56 @@
                             </DockPanel>
                         </TabItem>
                     </TabControl>
-                    <DockPanel LastChildFill="True">
+                    </DockPanel>
+                    <DockPanel LastChildFill="False">
 
-                        <Label DockPanel.Dock="Top" x:Name="label_sortDirectoryPath" Margin="0" Padding="10,5,0,0" Content="sortDirectoryPath" VerticalAlignment="Top"/>
+
+                        <Label DockPanel.Dock="Top" x:Name="label_sortDirectoryPath_Title" Margin="0" Padding="10,5,0,0" Content="sortDirectoryPath" VerticalAlignment="Top"/>
                         <DockPanel DockPanel.Dock="Top" LastChildFill="True" Background="LightGray" Height="30" Margin="0">
                             <Border Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"  CornerRadius="5"  Padding="0" Margin="3">
                                 <DockPanel LastChildFill="True" Height="30">
                                     <Button x:Name="button_sortDirectoryPathOpen" DockPanel.Dock="Left"  Content="🗃" Width="30" VerticalAlignment="Top" Padding="0" Margin="3" BorderThickness="0"  Background="Transparent" FontFamily="Segoe UI Emoji" Click="button_xDirectoryPathOpen_Click"/>
                                     <Button x:Name="button_sortDirectoryPathClear" DockPanel.Dock="Right" Content="❎" Width="30" Padding="0" Margin="3" VerticalAlignment="Top"  BorderThickness="0"    Background="Transparent" FontFamily="Segoe UI Emoji" Click="Button_xDirectoryPathClear_Click" />
-                                    <TextBox x:Name="textBox_sortDirectoryPath"  BorderThickness="0" VerticalAlignment="Top"  Background="Transparent"    VerticalContentAlignment="Center"     Margin="3"  Padding="5,0" FontSize="14" ToolTip="sort Directory Path"/>
+                                    <TextBox x:Name="textBox_sortDirectoryPath"  BorderThickness="0" VerticalAlignment="Top"  Background="Transparent"    VerticalContentAlignment="Center"     Margin="3"  Padding="5,0" FontSize="14" ToolTip="sort Directory Path" TextChanged="TextBox_sortDirectoryPath_TextChanged"/>
                                 </DockPanel>
                             </Border>
-                        </DockPanel>
 
-                        <Label DockPanel.Dock="Top" x:Name="label_fileList" Margin="0" Padding="10,5,0,0" Content="FileList" VerticalAlignment="Top"/>
-                        <DockPanel DockPanel.Dock="Top" LastChildFill="True" Background="LightGray" Margin="0">
-                            <Border Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"  CornerRadius="5"  Padding="0" Margin="3,3,3,3">
-                                <DockPanel LastChildFill="True">
-                                    <Button x:Name="button_fileListAdd" DockPanel.Dock="Left"  Content="➕" Width="30" VerticalContentAlignment="Top" VerticalAlignment="Stretch" Padding="0" Margin="3,3,3,3" BorderThickness="0"  Background="Transparent" FontFamily="Segoe UI Emoji" Click="Button_fileListAdd_Click"/>
-                                    <Button x:Name="button_fileListClear" DockPanel.Dock="Right" Content="❎" Width="30" VerticalContentAlignment="Top" Padding="0" Margin="3,3,3,3" VerticalAlignment="Stretch"  BorderThickness="0" Background="Transparent" FontFamily="Segoe UI Emoji" Click="Button_fileListClear_Click"/>
-                                    <TextBox x:Name="textBox_fileList" BorderThickness="0" VerticalAlignment="Stretch" AcceptsReturn="True" Background="Transparent" VerticalContentAlignment="Top" Margin="3,3,3,3" Padding="5,0,0,0" FontSize="14" ToolTip="File List" VerticalScrollBarVisibility="Visible"/>
+                        </DockPanel>
+                        <Label x:Name="label_sortDirectoryPath" DockPanel.Dock="Top" Margin="0" Padding="20,0,0,5" Content="... " VerticalAlignment="Top"/>
+
+                        <Label DockPanel.Dock="Top" Margin="0" Padding="10,5,0,0" Content="default Labeled Data Filename" VerticalAlignment="Top"/>
+                        <DockPanel DockPanel.Dock="Top" LastChildFill="True" Background="LightGray" Height="30" Margin="0">
+                            <Border Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"  CornerRadius="5"  Padding="0" Margin="3">
+                                <DockPanel LastChildFill="True" Height="30">
+                                    <TextBox x:Name="textBox_defaultLabeledDataFilename"  BorderThickness="0" VerticalAlignment="Top"  Background="Transparent"    VerticalContentAlignment="Center"     Margin="3"  Padding="5,0" FontSize="14" ToolTip="sort Directory Path" TextChanged="TextBox_defaultLabeledDataFilename_TextChanged"/>
                                 </DockPanel>
                             </Border>
+
                         </DockPanel>
+                        <Label x:Name="label_defaultLabeledDataFilename" DockPanel.Dock="Top" Margin="0" Padding="20,0,0,5" Content="... " VerticalAlignment="Top"/>
+
+
+                        <Label DockPanel.Dock="Top" Margin="0" Padding="10,5,0,0" Content="defaultSettingFilePath" VerticalAlignment="Top"/>
+                        <DockPanel DockPanel.Dock="Top" LastChildFill="True" Background="LightGray" Height="30" Margin="0">
+                            <Border Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"  CornerRadius="5"  Padding="0" Margin="3">
+                                <DockPanel LastChildFill="True" Height="30">
+                                    <TextBox x:Name="textBox_defaultSettingFilePath"  BorderThickness="0" VerticalAlignment="Top"  Background="Transparent"    VerticalContentAlignment="Center"     Margin="3"  Padding="5,0" FontSize="14" ToolTip="defaultSettingFilePath" TextChanged="TextBox_defaultSettingFilePath_TextChanged"/>
+                                </DockPanel>
+                            </Border>
+
+                        </DockPanel>
+                        <Label x:Name="label_defaultSettingFilename" DockPanel.Dock="Top" Margin="0" Padding="20,0,0,5" Content="... " VerticalAlignment="Top"/>
+
+
+                        <Label DockPanel.Dock="Top" Margin="0" Padding="10,5,0,0" Content="TemplateString to Clipborad Buttons" VerticalAlignment="Top"/>
+                        <ToolBarTray Background="White" DockPanel.Dock="Top" Margin="20,0,3,0">
+                            <ToolBar Band="1" BandIndex="1">
+                                <!-- Load from File -->
+                                <Button x:Name="button_defaultFilenameTemplate_DirectoryName" VerticalAlignment="Top" Content="WorkDirectoryName"  Margin="10,0,10,0" Padding="0" Click="Button_defaultFilenameTemplate_Click" />
+                                <Button x:Name="button_defaultFilenameTemplate_DirectoryPath" VerticalAlignment="Top" Content="WorkDirectoryPath"  Margin="10,0,10,0" Padding="0" Click="Button_defaultFilenameTemplate_Click" />
+                            </ToolBar>
+                        </ToolBarTray>
+
 
                     </DockPanel>
                 </DockPanel>

@@ -51,6 +51,7 @@ namespace MovieFrameCheck
             suppressionFlag_inLoading = true;
             this.DataContext = this;
             InitializeComponent();
+
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -142,10 +143,8 @@ namespace MovieFrameCheck
 
         private void button_dataGrid_RowLabelCopy_Click(object sender, RoutedEventArgs e)
         {
-
             if (DataGrid_FeatureList.SelectedCells.Count < 1) return;
             int firstLabel = ((RowData)(DataGrid_FeatureList.SelectedCells[0].Item)).Label;
-
 
             foreach (var cellInfo in DataGrid_FeatureList.SelectedCells)
             {
@@ -156,7 +155,6 @@ namespace MovieFrameCheck
             DataGrid_FeatureList.Items.Refresh();
         }
 
-        //bool suppressFlag_DataGrid_FeatureList_CellValueChanged = false;
         string[] RowDataHeader = { "" };
         string[] FeatureHeader = { "" };
         private void button_dataGrid_RowsLoadFile_Click(object sender, RoutedEventArgs e)
@@ -166,8 +164,6 @@ namespace MovieFrameCheck
             if (ofd.ShowDialog() != true) return;
 
             string[] Lines = File.ReadAllLines(ofd.FileName);
-
-            //suppressFlag_DataGrid_FeatureList_CellValueChanged = true;
 
             RowDataList.Clear();
 
@@ -200,15 +196,33 @@ namespace MovieFrameCheck
                 }
             }
             DataGrid_FeatureList.Items.Refresh();
-            //suppressFlag_DataGrid_FeatureList_CellValueChanged = false;
+
         }
 
         private void button_dataGrid_RowsSaveFile_Click(object sender, RoutedEventArgs e)
         {
+            string defaultPath = defaultLabeledDataFilename;
+            if (!Directory.Exists(Path.GetDirectoryName(defaultPath)))
+            {
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(defaultPath));
+                }
+                catch
+                {
+                    defaultPath = Path.GetFileName(defaultPath);
+                }
+            }
+
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Filter = "CSV|*.csv";
-            sfd.FileName = "LabeledPose.csv";
+            sfd.FileName = Path.GetFileName( defaultPath);
             sfd.OverwritePrompt = false;
+
+            if (Directory.Exists(Path.GetDirectoryName(defaultPath)))
+            {
+                sfd.InitialDirectory = Path.GetDirectoryName(defaultPath);
+            }
 
             if (sfd.ShowDialog() != true) return;
 
@@ -514,8 +528,6 @@ namespace MovieFrameCheck
 
         }
 
-
-        //RowData changedRowData = null;
         private void DataGrid_FeatureList_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             if (e.Column is DataGridComboBoxColumn && e.EditAction == DataGridEditAction.Commit)
@@ -628,7 +640,6 @@ namespace MovieFrameCheck
 
             if ((e.Key == Key.Down) && activeRows != null && activeRows.Count > 1)
             {
-                // RowDataList の中で activeRows に含まれる最大インデックスを見つける
                 var indices = activeRows
                     .Select(row => RowDataList.IndexOf(row))
                     .Where(index => index >= 0)
@@ -785,31 +796,6 @@ namespace MovieFrameCheck
             }
         }
 
-        private void UpdateDataGridRowFocus(DataGrid dataGrid)
-        {
-            dataGrid.Focus();
-
-            var cellInfo = dataGrid.SelectedCells.FirstOrDefault();
-
-            if (!cellInfo.Equals(default(DataGridCellInfo)))
-            {
-                VirtualizationAwareLogic(dataGrid, cellInfo);
-
-                var row = dataGrid.ItemContainerGenerator.ContainerFromItem(cellInfo.Item) as DataGridRow;
-                if (row != null)
-                {
-                    row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-                }
-            }
-
-        }
-
-        private void VirtualizationAwareLogic(DataGrid dataGrid)
-        {
-            var cellInfo = dataGrid.SelectedCells.FirstOrDefault();
-            VirtualizationAwareLogic(dataGrid, cellInfo);
-        }
-
         private void VirtualizationAwareLogic(DataGrid dataGrid, DataGridCellInfo cellInfo)
         {
             if (!cellInfo.Equals(default(DataGridCellInfo)))
@@ -833,11 +819,9 @@ namespace MovieFrameCheck
                 {
                     RowData LastSelectedRowDataBuff = LastSelectedRowData;
                     if (lastSelected != null) LastSelectedRowData = lastSelected;
-
                     if (LastSelectedRowData == null && LastSelectedRowDataBuff != null) { LastSelectedRowData = LastSelectedRowDataBuff; }
 
                     setTextBox_FeatureInfo(lastSelected);
-
                     setImage_FrameImage(lastSelected, textBox_workDirectoryPath.Text);
 
                     if (LastSelectedRowData.Label < listBox_LabelsView.Items.Count + 1)
@@ -848,17 +832,22 @@ namespace MovieFrameCheck
                     {
                         listBox_LabelsView.SelectedIndex = 0;
                     }
-
                 }
                 else { LastSelectedRowData = null; }
-
             }
 
             if (activeRows.Count <= 0) inputBuffer = "";
-
-
-
         }
+
+        private string replaceTemplate(string src)
+        {
+            string result = src;
+            result = result.Replace("{WorkDirectoryName}", Path.GetFileName(textBox_workDirectoryPath.Text.TrimEnd('\\')));
+            result = result.Replace("{WorkDirectoryPath}", textBox_workDirectoryPath.Text.TrimEnd('\\'));
+
+            return result;
+        }
+
 
         private void button_SortLabeledPicture_Click(object sender, RoutedEventArgs e)
         {
@@ -896,7 +885,14 @@ namespace MovieFrameCheck
                 {
                     ShowFrame(newFrameIndex);
 
-                    string topDirectory = textBox_sortDirectoryPath.Text;
+                    string topDirectory = sortDirectoryPath;
+
+                    if (!Directory.Exists(topDirectory))
+                    {
+                        try { Directory.CreateDirectory(topDirectory); }
+                        catch { break; }
+                    }
+
                     string newFrameIndexString = newFrameIndex.ToString("00000000");
 
                     string dirPath = System.IO.Path.Combine(topDirectory, label);
@@ -1143,27 +1139,6 @@ namespace MovieFrameCheck
             }
         }
 
-        private void Button_fileListClear_Click(object sender, RoutedEventArgs e)
-        {
-            textBox_fileList.Text = "";
-        }
-
-        private void Button_fileListAdd_Click(object sender, RoutedEventArgs e)
-        {
-            string path = textBox_workDirectoryPath.Text;
-
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "MP4|*.mp4";
-            ofd.FilterIndex = 0;
-            if (Directory.Exists(textBox_workDirectoryPath.Text)) ofd.InitialDirectory = textBox_workDirectoryPath.Text;
-            if (ofd.ShowDialog() != true) return;
-
-            List<string> fileList = new List<string>(textBox_fileList.Text.Replace("\r\n", "\n").Trim('\n').Split('\n'));
-            fileList.AddRange(ofd.FileNames);
-            textBox_fileList.Text = string.Join("\r\n", fileList.Distinct());
-
-        }
-
         private void Image_DisplayedImage_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (image_DisplayedImage.Source is BitmapSource bitmapSource)
@@ -1249,6 +1224,118 @@ namespace MovieFrameCheck
 
             }
         }
+
+        private void button_LoadSetting_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "INI|*.ini";
+
+            string defaultPath = defaultSettingFilePath;
+            if (Directory.Exists(Path.GetDirectoryName(defaultPath)))
+            {
+                ofd.InitialDirectory = Path.GetDirectoryName(defaultPath);
+            }
+            ofd.FileName = Path.GetFileName(defaultPath);
+
+
+            if (ofd.ShowDialog() != true) return;
+
+            string inifilepath = ofd.FileName;
+            if (File.Exists(inifilepath)) ControlValuesToString.PutValue(this, File.ReadAllText(inifilepath));
+            suppressionFlag_inLoading = false;
+
+            UpdateComboBoxDisplay();
+
+        }
+
+        private void button_SaveSetting_Click(object sender, RoutedEventArgs e)
+        {
+            string defaultPath = defaultSettingFilePath;
+            if (!Directory.Exists(Path.GetDirectoryName(defaultPath)))
+            {
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(defaultPath));
+                }
+                catch
+                {
+                    defaultPath = Path.GetFileName(defaultPath);
+                }
+            }
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = "INI|*.ini";
+            sfd.FileName = Path.GetFileName(defaultPath);
+            sfd.OverwritePrompt = false;
+
+            if (Directory.Exists(Path.GetDirectoryName(defaultPath)))
+            {
+                sfd.InitialDirectory = Path.GetDirectoryName(defaultPath);
+            }
+
+
+            if (sfd.ShowDialog() != true) return;
+
+            textBox_FeatureInfo.Text = "";
+            string inifilepath = sfd.FileName;
+            File.WriteAllText(inifilepath, ControlValuesToString.GetString(this));
+
+        }
+
+        private void button_UpdateDafaultSetting_Click(object sender, RoutedEventArgs e)
+        {
+            textBox_FeatureInfo.Text = "";
+            string inifilepath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "_Param.ini");
+            File.WriteAllText(inifilepath, ControlValuesToString.GetString(this));
+        }
+
+        private void Button_defaultFilenameTemplate_Click(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText("{" + ((Button)sender).Content + "}");
+        }
+
+        private string sortDirectoryPath
+        {
+            get
+            {
+                string result = textBox_sortDirectoryPath.Text.TrimEnd('\\');
+                return replaceTemplate(result);
+            }
+        }
+
+        private string defaultLabeledDataFilename
+        {
+            get
+            {
+                string result = textBox_defaultLabeledDataFilename.Text.TrimEnd('\\');
+                return replaceTemplate(result);
+            }
+        }
+
+        private string defaultSettingFilePath
+        {
+            get
+            {
+                string result = textBox_defaultSettingFilePath.Text.TrimEnd('\\');
+                return replaceTemplate(result);
+            }
+        }
+
+        private void TextBox_defaultLabeledDataFilename_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            label_defaultLabeledDataFilename.Content = "... " + defaultLabeledDataFilename;
+        }
+
+        private void TextBox_sortDirectoryPath_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            label_sortDirectoryPath.Content = "... "+ sortDirectoryPath;
+        }
+
+        private void TextBox_defaultSettingFilePath_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            label_defaultSettingFilename.Content = "... " + defaultSettingFilePath;
+        }
+
     }
 
     public class LabelItem
@@ -1300,5 +1387,6 @@ namespace MovieFrameCheck
         }
 
     }
+
 
 }
